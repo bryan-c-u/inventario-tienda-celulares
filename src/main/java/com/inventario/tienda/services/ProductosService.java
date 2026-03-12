@@ -18,60 +18,42 @@ public class ProductosService {
 
     private final ProductosRepository productoRepository;
 
-    
-    public ProductoResponseDTO createProducto(ProductoRequestDTO productoRequestDTO) {
+    public ProductoResponseDTO createProducto(ProductoRequestDTO request){
 
-        
-        if(productoRequestDTO.getNombre() == null || productoRequestDTO.getNombre().isEmpty()){
+        if(request.getNombre() == null || request.getNombre().isEmpty()){
             throw new RuntimeException("El nombre del producto es obligatorio");
         }
 
-        if(productoRequestDTO.getPrecio() == null || productoRequestDTO.getPrecio() <= 0){
+        if(request.getPrecio() == null || request.getPrecio() <= 0){
             throw new RuntimeException("El precio debe ser mayor a 0");
         }
 
-        if(productoRequestDTO.getStock() == null || productoRequestDTO.getStock() < 0){
+        if(request.getStock() == null || request.getStock() < 0){
             throw new RuntimeException("El stock no puede ser negativo");
         }
 
-        
-        Producto productoExistente = productoRepository.findByNombre(productoRequestDTO.getNombre());
+        Producto productoExistente = productoRepository.findByNombre(request.getNombre());
 
-        
         if(productoExistente != null){
 
             productoExistente.setStock(
-                productoExistente.getStock() + productoRequestDTO.getStock()
+                productoExistente.getStock() + request.getStock()
             );
 
-            Producto productoActualizado = productoRepository.save(productoExistente);
+            Producto actualizado = productoRepository.save(productoExistente);
 
-            ProductoResponseDTO response = new ProductoResponseDTO();
-            response.setId(productoActualizado.getId());
-            response.setNombre(productoActualizado.getNombre());
-            response.setDescripcion(productoActualizado.getDescripcion());
-            response.setPrecio(productoActualizado.getPrecio());
-            response.setStock(productoActualizado.getStock());
-
-            return response;
+            return mapToResponse(actualizado);
         }
 
         Producto producto = new Producto();
-        producto.setNombre(productoRequestDTO.getNombre());
-        producto.setDescripcion(productoRequestDTO.getDescripcion());
-        producto.setPrecio(productoRequestDTO.getPrecio());
-        producto.setStock(productoRequestDTO.getStock());
+        producto.setNombre(request.getNombre());
+        producto.setDescripcion(request.getDescripcion());
+        producto.setPrecio(request.getPrecio());
+        producto.setStock(request.getStock());
 
-        productoRepository.save(producto);
+        Producto guardado = productoRepository.save(producto);
 
-        ProductoResponseDTO response = new ProductoResponseDTO();
-        response.setId(producto.getId());
-        response.setNombre(producto.getNombre());
-        response.setDescripcion(producto.getDescripcion());
-        response.setPrecio(producto.getPrecio());
-        response.setStock(producto.getStock());
-
-        return response;
+        return mapToResponse(guardado);
     }
 
     public List<ProductoResponseDTO> getProductos(){
@@ -80,15 +62,7 @@ public class ProductosService {
         List<ProductoResponseDTO> lista = new ArrayList<>();
 
         for(Producto producto : productos){
-
-            ProductoResponseDTO response = new ProductoResponseDTO();
-            response.setId(producto.getId());
-            response.setNombre(producto.getNombre());
-            response.setDescripcion(producto.getDescripcion());
-            response.setPrecio(producto.getPrecio());
-            response.setStock(producto.getStock());
-
-            lista.add(response);
+            lista.add(mapToResponse(producto));
         }
 
         return lista;
@@ -99,52 +73,52 @@ public class ProductosService {
         Producto producto = productoRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + id));
 
-        ProductoResponseDTO response = new ProductoResponseDTO();
-        response.setId(producto.getId());
-        response.setNombre(producto.getNombre());
-        response.setDescripcion(producto.getDescripcion());
-        response.setPrecio(producto.getPrecio());
-        response.setStock(producto.getStock());
-
-        return response;
+        return mapToResponse(producto);
     }
 
     public ProductoResponseDTO deleteProducto(Long id){
 
         Producto producto = productoRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("No se puede eliminar. Producto no encontrado"));
+
+        productoRepository.delete(producto);
+
+        return mapToResponse(producto);
+    }
+
+    public ProductoResponseDTO updateProducto(Long id, ProductoRequestDTO request){
+
+        Producto producto = productoRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + id));
 
+        producto.setNombre(request.getNombre());
+        producto.setDescripcion(request.getDescripcion());
+        producto.setPrecio(request.getPrecio());
+        producto.setStock(request.getStock());
+
+        Producto actualizado = productoRepository.save(producto);
+
+        return mapToResponse(actualizado);
+    }
+
+    public ProductoResponseDTO getProductoByNombre(String nombre){
+
+        Producto producto = productoRepository.findByNombre(nombre);
+
+        if(producto == null){
+            throw new RuntimeException("No existe un producto con el nombre: " + nombre);
+        }
+
+        return mapToResponse(producto);
+    }
+
+    private ProductoResponseDTO mapToResponse(Producto producto){
         ProductoResponseDTO response = new ProductoResponseDTO();
         response.setId(producto.getId());
         response.setNombre(producto.getNombre());
         response.setDescripcion(producto.getDescripcion());
         response.setPrecio(producto.getPrecio());
         response.setStock(producto.getStock());
-
-        productoRepository.delete(producto);
-
-        return response;
-    }
-
-    public ProductoResponseDTO updateProducto(Long id, ProductoRequestDTO productoRequestDTO){
-
-        Producto producto = productoRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + id));
-
-        producto.setNombre(productoRequestDTO.getNombre());
-        producto.setDescripcion(productoRequestDTO.getDescripcion());
-        producto.setPrecio(productoRequestDTO.getPrecio());
-        producto.setStock(productoRequestDTO.getStock());
-
-        Producto productoActualizado = productoRepository.save(producto);
-
-        ProductoResponseDTO response = new ProductoResponseDTO();
-        response.setId(productoActualizado.getId());
-        response.setNombre(productoActualizado.getNombre());
-        response.setDescripcion(productoActualizado.getDescripcion());
-        response.setPrecio(productoActualizado.getPrecio());
-        response.setStock(productoActualizado.getStock());
-
         return response;
     }
 }
