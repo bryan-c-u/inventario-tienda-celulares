@@ -21,66 +21,34 @@ public class ProductoController {
 
     @PostMapping
     public ResponseEntity<ProductoResponseDTO> createProducto(@RequestBody ProductoRequestDTO productoRequestDTO) {
-        try {
 
-            ProductoResponseDTO response = productoService.createProducto(productoRequestDTO);
+        ProductoResponseDTO response = productoService.createProducto(productoRequestDTO);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
     public ResponseEntity<List<ProductoResponseDTO>> getProductos() {
-        try {
 
-            List<ProductoResponseDTO> response = productoService.getProductos();
+        List<ProductoResponseDTO> response = productoService.getProductos();
 
-            return ResponseEntity.status(HttpStatus.FOUND).body(response);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-
-        }
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductoResponseDTO> getProductoById(@PathVariable Long id) {
-        try {
 
-            ProductoResponseDTO response = productoService.getProductoById(id);
+        ProductoResponseDTO response = productoService.getProductoById(id);
 
-            return ResponseEntity.status(HttpStatus.FOUND).body(response);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-
-        }
+        return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ProductoResponseDTO> deleteProducto(@PathVariable Long id) {
-        try {
+    @GetMapping("/nombre/{nombre}")
+    public ResponseEntity<ProductoResponseDTO> getProductoByNombre(@PathVariable String nombre) {
 
-            ProductoResponseDTO response = productoService.deleteProducto(id);
+        ProductoResponseDTO response = productoService.getProductoByNombre(nombre);
 
-            return ResponseEntity.status(HttpStatus.FOUND).body(response);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-
-        }
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
@@ -88,22 +56,16 @@ public class ProductoController {
             @PathVariable Long id,
             @RequestBody ProductoRequestDTO productoRequestDTO) {
 
-        try {
+        ProductoResponseDTO updatedProducto = productoService.updateProducto(id, productoRequestDTO);
 
-            ProductoResponseDTO updatedProducto = productoService.updateProducto(id, productoRequestDTO);
-
-            return ResponseEntity.ok(updatedProducto);
-
-        } catch (RuntimeException e) {
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-
-        }
+        return ResponseEntity.ok(updatedProducto);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ProductoResponseDTO> deleteProducto(@PathVariable Long id) {
+
+        ProductoResponseDTO response = productoService.deleteProducto(id);
+
+        return ResponseEntity.ok(response);
+    }
 }
